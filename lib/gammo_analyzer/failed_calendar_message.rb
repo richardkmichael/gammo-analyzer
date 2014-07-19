@@ -10,7 +10,7 @@ class FailedCalendarMessage < FailedMessage
     super.concat [ title, organizer, attendees ]
   end
 
-  def self.csv_header
+  def self.to_csv
     super.concat [ 'TITLE', 'ORGANIZER', 'ATTENDEES' ]
   end
 end

@@ -52,13 +52,13 @@ end
 
 puts ""
 puts "Error codes encountered: #{error_codes}"
-report = File.open(File.join("fixtures", File.basename(f)) << "-report.csv", 'w+')
+report = File.open(File.join("fixture", File.basename(f)) << "-report.csv", 'w+')
 
 failed_message_klasses = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
 
 CSV report do |csv|
   failed_message_klasses.each do | failed_message_klass |
-    csv << failed_message_klass.csv_header
+    csv << failed_message_klass.to_csv
 
     failed_message_klass.all do |m|
       csv << m.to_csv

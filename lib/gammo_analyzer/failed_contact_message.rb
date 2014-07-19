@@ -6,7 +6,7 @@ class FailedContactMessage < FailedMessage
     super.concat [ full_name, email_address ]
   end
 
-  def self.csv_header
+  def self.to_csv
     super.concat [ 'FULL NAME', 'EMAIL ADDRESS' ]
   end
 end

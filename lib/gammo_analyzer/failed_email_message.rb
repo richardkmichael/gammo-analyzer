@@ -10,10 +10,10 @@ class FailedEmailMessage < FailedMessage
   end
 
   def to_csv
-    super.concat [ "#{human_sender} (#{sender})", receiver, sent_at, subject ]
+    super.concat [ sent_at, "#{human_sender} (#{sender})", receiver, subject ]
   end
 
-  def self.csv_header
-    super.concat [ 'SENDER', 'SENDER FULL', 'RECEIVER', 'SENT AT', 'SUBJECT' ]
+  def self.to_csv
+    super.concat [ 'SENT AT', 'SENDER', 'SENDER FULL', 'RECEIVER', 'SUBJECT' ]
   end
 end
