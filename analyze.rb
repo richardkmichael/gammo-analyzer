@@ -64,16 +64,12 @@ messages_with_errors = Message.where(Sequel.~(:ErrorCode => ''))
 error_codes = messages_with_errors.map(:ErrorCode).uniq
 
 # Total message counts.
+puts "                 Total folders: #{Folder.count}"
 puts "                Total messages: #{Message.count} (including #{messages_with_errors.count} with errors)"
 puts "         Total failed messages: #{FailedMessage.count} (sum of all types below)"
 puts "   Total failed email messages: #{FailedEmailMessage.count}"
 puts " Total failed contact messages: #{FailedContactMessage.count}"
 puts "Total failed calendar messages: #{FailedCalendarMessage.count}"
-
-puts ""
-puts "Total folders migrated: #{Folder.count}"
-puts Folder.select(:FolderName).map(&:name)
-puts ""
 
 if messages_with_errors.count != FailedMessage.count
   puts ""
@@ -90,6 +86,10 @@ report_dir = File.join(output_dir, File.basename(database))
 FileUtils.mkdir_p report_dir unless File.directory? report_dir
 
 failed_message_klasses = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
+
+puts ""
+puts Folder.select(:FolderName).map(&:name)
+puts ""
 
 failed_message_klasses.each do | failed_message_klass |
   failed_message_klass.any? do
