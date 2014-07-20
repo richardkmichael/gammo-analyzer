@@ -4,7 +4,9 @@
 #     subclass type; e.g. this should return FailedEmailMessage, FailedContactMessage, etc.
 #     Message.where(Sequel.~(:ErrorCode => '')).first.class
 #
-# 2/ Error codes should link to Google support.
+# 2/ Errors:
+#      a) codes should link to Google support.
+#      b) not all "error codes" are 8-digit HEX, e.g., "GDSTATUS_BAD_REQUEST"
 #
 # 3/ Extract CSV to a presenter, define "printable columns" on the models, etc.
 
@@ -55,7 +57,7 @@ require_relative 'lib/gammo_analyzer/core/string'
 # For reports.
 require 'csv'
 
-# Messages with errors.
+# Messages with errors: either ErrorCode or ErrorDesc is not empty.
 messages_with_errors = Message.where(Sequel.~(:ErrorCode => ''))
 
 # All encountered error codes.
@@ -68,6 +70,11 @@ puts "   Total failed email messages: #{FailedEmailMessage.count}"
 puts " Total failed contact messages: #{FailedContactMessage.count}"
 puts "Total failed calendar messages: #{FailedCalendarMessage.count}"
 
+puts ""
+puts "Total folders migrated: #{Folder.count}"
+puts Folder.select(:FolderName).map(&:name)
+puts ""
+
 if messages_with_errors.count != FailedMessage.count
   puts ""
   puts "WARNING: Message class errors not equal to FailedMessage class errors. Investigate."
@@ -77,14 +84,17 @@ end
 puts ""
 puts "Error codes encountered: #{error_codes}"
 
-FileUtils.mkdir_p output_dir unless File.directory? output_dir
+binding.pry
+
+report_dir = File.join(output_dir, File.basename(database))
+FileUtils.mkdir_p report_dir unless File.directory? report_dir
 
 failed_message_klasses = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
 
 failed_message_klasses.each do | failed_message_klass |
   failed_message_klass.any? do
 
-    report_file = File.join(output_dir, "#{failed_message_klass.name.underscore}.csv")
+    report_file = File.join(report_dir, "#{failed_message_klass.name.underscore}.csv")
 
     CSV File.open(report_file, "w+") do |csv|
       csv << failed_message_klass.to_csv
