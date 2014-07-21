@@ -57,19 +57,28 @@ require_relative 'lib/gammo_analyzer/core/string'
 # For reports.
 require 'csv'
 
-# Messages with errors: either ErrorCode or ErrorDesc is not empty.
+# klass and instances must respond to .to_csv.
+def write_csv_report_for_klass klass
+  report_file = File.join(@report_dir, "#{klass.name.underscore}.csv")
+  CSV File.open(report_file, "w+") do |csv|
+    csv << klass.to_csv
+    klass.all do |m|
+      csv << m.to_csv
+    end
+  end
+end
+
+# Messages with errors: either ErrorCode or ErrorDesc is not empty. # FIXME: Why not just "FailedMessage.count"?
 messages_with_errors = Message.where(Sequel.~(:ErrorCode => ''))
 
-# All encountered error codes.
+# Folders with failed messages.
+folders_with_failures = Folder.all.select { |f| f.failed_messages? }
+
+# All encountered error codes. # FIXME: Do this with 'SELECT ... DISTINCT'.
 error_codes = messages_with_errors.map(:ErrorCode).uniq
 
-# Total message counts.
-puts "                 Total folders: #{Folder.count}"
-puts "                Total messages: #{Message.count} (including #{messages_with_errors.count} with errors)"
-puts "         Total failed messages: #{FailedMessage.count} (sum of all types below)"
-puts "   Total failed email messages: #{FailedEmailMessage.count}"
-puts " Total failed contact messages: #{FailedContactMessage.count}"
-puts "Total failed calendar messages: #{FailedCalendarMessage.count}"
+puts ""
+puts "Error codes encountered: #{error_codes}"
 
 if messages_with_errors.count != FailedMessage.count
   puts ""
@@ -77,31 +86,48 @@ if messages_with_errors.count != FailedMessage.count
   puts ""
 end
 
-puts ""
-puts "Error codes encountered: #{error_codes}"
+# Total message counts.
+puts "                 Total folders: #{Folder.count} (including #{folders_with_failures.count} with failures)"
+puts "                Total messages: #{Message.count} (including #{messages_with_errors.count} with errors)"
+puts "         Total failed messages: #{FailedMessage.count} (sum of all types below)"
+puts "   Total failed email messages: #{FailedEmailMessage.count}"
+puts " Total failed contact messages: #{FailedContactMessage.count}"
+puts "Total failed calendar messages: #{FailedCalendarMessage.count}"
 
-binding.pry
+@report_dir = File.join(output_dir, File.basename(database))
+FileUtils.mkdir_p @report_dir unless File.directory? @report_dir
 
-report_dir = File.join(output_dir, File.basename(database))
-FileUtils.mkdir_p report_dir unless File.directory? report_dir
+# Folder report: names, message counts, failed message counts.
+write_csv_report_for_klass Folder
 
+# Message type reports: folder, message-type specific details - subject, contact, attendees, etc.
 failed_message_klasses = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
-
-puts ""
-puts Folder.select(:FolderName).map(&:name)
-puts ""
-
 failed_message_klasses.each do | failed_message_klass |
   failed_message_klass.any? do
-
-    report_file = File.join(report_dir, "#{failed_message_klass.name.underscore}.csv")
-
-    CSV File.open(report_file, "w+") do |csv|
-      csv << failed_message_klass.to_csv
-      failed_message_klass.all do |m|
-        csv << m.to_csv
-      end
-    end
-
+    write_csv_report_for_klass failed_message_klass
   end
 end
+
+def console?
+  # Do not pollute readline's history.
+  system 'stty raw -echo'
+  begin
+    STDIN.read_nonblock 1
+  rescue Errno::EINTR, Errno::EAGAIN, EOFError
+    false
+  ensure
+    # Ensure the terminal is cooked when we exit.
+    system 'stty -raw echo'
+  end
+end
+
+print 'Press any key to start a Pry session in '
+countdown = 5
+until ( countdown == 0 ) || ( start_console = console? ) do
+  count = "..#{countdown}"
+  countdown == 1 ? puts(count) : print(count)
+  sleep 1
+  countdown -= 1
+end
+
+binding.pry if start_console
