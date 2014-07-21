@@ -12,8 +12,12 @@ class Folder < Sequel::Model
                        .where(:Folders__FolderId => id)
   end
 
+  def failed_messages?
+    failed_messages.count > 0
+  end
+
   def to_csv
-    [ name, self.messages.count ]
+    [ name, self.messages.count, failed_messages.count ]
   end
 
   def self.to_csv
