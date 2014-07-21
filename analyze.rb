@@ -13,37 +13,23 @@
 require "pry"
 require "sqlite3"
 require "sequel"
+require "csv"
 
-require_relative "lib/gammo_analyzer/cli"
-
-@report_builder = GammoAnalyzer::CLI.new
 
 # FIXME: How to fix the code dependencies/ordering so that the CLI require handles everything?
-#        Really, we need a GammoAnalyzer::ReportBuilder, which inits the CLI, then the DB.
+#        Database must be ready before any of the later classes can be loaded.
+#        Really, we need a GammoAnalyzer::ReportBuilder, which inits the CLI, then the DB. THIS DOESN'T SOLVE ANYTHING :(
+require_relative "lib/gammo_analyzer/report_builder"
+@report_builder = GammoAnalyzer::ReportBuilder.new  # FIXME: Maybe we should pass in the configuration object?
 require_relative "lib/gammo_analyzer/database"
 
-# Database must be ready before any of these classes can be loaded.
-require_relative 'lib/gammo_analyzer/folder'
-require_relative 'lib/gammo_analyzer/message'
-require_relative 'lib/gammo_analyzer/failed_message'
-require_relative 'lib/gammo_analyzer/failed_email_message'
-require_relative 'lib/gammo_analyzer/failed_contact_message'
-require_relative 'lib/gammo_analyzer/failed_calendar_message'
-require_relative 'lib/gammo_analyzer/core/string'
-
-# For reports.
-require 'csv'
-
-# klass and instances must respond to .to_csv.
-def write_csv_report_for_klass klass
-  report_file = File.join(@report_builder.report_dir, "#{klass.name.underscore}.csv")
-  CSV File.open(report_file, "w+") do |csv|
-    csv << klass.to_csv
-    klass.all do |m|
-      csv << m.to_csv
-    end
-  end
-end
+require_relative "lib/gammo_analyzer/folder"
+require_relative "lib/gammo_analyzer/message"
+require_relative "lib/gammo_analyzer/failed_message"
+require_relative "lib/gammo_analyzer/failed_email_message"
+require_relative "lib/gammo_analyzer/failed_contact_message"
+require_relative "lib/gammo_analyzer/failed_calendar_message"
+require_relative "lib/gammo_analyzer/core/string"
 
 # Messages with errors: either ErrorCode or ErrorDesc is not empty. # FIXME: Why not just "FailedMessage.count"?
 messages_with_errors = Message.where(Sequel.~(:ErrorCode => ''))
@@ -72,13 +58,13 @@ puts " Total failed contact messages: #{FailedContactMessage.count}"
 puts "Total failed calendar messages: #{FailedCalendarMessage.count}"
 
 # Folder report: names, message counts, failed message counts.
-write_csv_report_for_klass Folder
+@report_builder.write_csv_report_for_klass Folder
 
 # Message type reports: folder, message-type specific details - subject, contact, attendees, etc.
 failed_message_klasses = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
 failed_message_klasses.each do | failed_message_klass |
   failed_message_klass.any? do
-    write_csv_report_for_klass failed_message_klass
+    @report_builder.write_csv_report_for_klass failed_message_klass
   end
 end
 
