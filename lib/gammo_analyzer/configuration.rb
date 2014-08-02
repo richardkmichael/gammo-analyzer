@@ -7,6 +7,7 @@ module GammoAnalyzer
     def self.configure config
       # FIXME Don't use a hash; use ivars and set them from the hash, then use attr_reader instead of custom accessors.
       @config = DEFAULT_OPTIONS.merge config
+      # require 'pry'; binding.pry
       @config.store :report_dir, File.join(output_dir, File.basename(database))
     end
 

@@ -26,7 +26,7 @@ module GammoAnalyzer
     end
 
     def offer_pry
-      print 'Press any key to start a Pry session in '
+      print "\nPress any key to start a Pry session in "
       countdown = 3
       until ( countdown == 0 ) || ( start_console = console? ) do
         count = "..#{countdown}"
@@ -56,11 +56,11 @@ module GammoAnalyzer
     def parse_options_from_argv
       options = {}
       OptionParser.new do |opts|
-        opts.on('-d SQLITEDB', '--database=SQLITEDB', String, 'Path to SQLITE database file.') do |v|
+        opts.on('-d SQLITEDB', '--database=SQLITEDB', String, 'Path to SQLITE database file. (Required.)') do |v|
           options.store :database, v
         end
 
-        opts.on('-o DIRECTORY', '--output=DIRECTORY', String, 'Directory to write report CSV files.') do |v|
+        opts.on('-o DIRECTORY', '--output=DIRECTORY', String, 'Directory to write report files. (Default: With the DB file.') do |v|
           options.store :output_dir, v
         end
 
@@ -69,15 +69,16 @@ module GammoAnalyzer
         end
 
         opts.on('-h', '--help', 'Show this message.') do
-          puts opts
+          $stderr.puts opts
           exit
         end
 
         begin
           ARGV << '-h' if ARGV.empty?
-          opts.parse!(ARGV)
-        rescue OptionParser::ParseError => e
-          $stderr.puts e.message, '\n', opts
+          opts.parse! ARGV
+          raise OptionParser::MissingArgument, 'Database file required' unless options.fetch :database, nil
+        rescue OptionParser::ParseError => e # OP::MissingArgument < OP::ParseError, so this catches both.
+          $stderr.puts "#{e.message}\n\n#{opts}"
           exit(-1)
         end
       end
