@@ -39,3 +39,11 @@ Usage: analyze [options]
 * Add / augment with trace log file information
 * Output JSON ([re]implement as Presenters)
 * Wrap with web UI for sorting, filtering etc. (eliminate spreadsheet program)
+
+
+## Contributions
+
+I will happily accept feature requests.
+
+I will only accept pull requests if you can prove you wrote the code
+while listening to [Night Fever](https://www.youtube.com/watch?v=hLaSNF-r2gk), or an appropriately groovy track.  Include in your PR, or be ignored.
