@@ -1,30 +1,30 @@
-require_relative "cli"
-
 module GammoAnalyzer
   class ReportBuilder
 
-    def initialize
-      @cli = GammoAnalyzer::CLI.new
+    # FIXME: This should receive a configuration object, or use an object from a higher module?
+    def initialize cli
+      @cli = cli
     end
 
-    # FIXME: Feels wrong.. but at least use a delegator if we're doing this.
-    def report_dir
-      @cli.report_dir
-    end
+    def report
+      report = summary
 
-    # klass and instances must respond to .to_csv.
-    def write_csv_report_for_klass klass
-      report_file = File.join(report_dir, "#{klass.name.underscore}.csv")
+      # The Folder report: names, message counts, failed message counts.
+      report_file = write_report_for_klass Folder
+      report << "Report written for Folder to #{report_file}"
 
-      CSV File.open(report_file, "w+") do |csv|
-        csv << klass.to_csv
-        klass.all do |m|
-          csv << m.to_csv
-        end
+      # The message type reports: which folder, message-type specific details - subject, contact, attendees, etc.
+      FAILED_MESSAGE_KLASSES.each do | failed_message_klass |
+        report << if failed_message_klass.any?
+                    write_report_for_klass failed_message_klass
+                  else
+                    "\nNo failures for #{failed_message_klass}."
+                  end
       end
+
+      report
     end
 
-    # FIXME: This can't be here until the database loading problem has been solved.
     def summary
       # Messages with errors: either ErrorCode or ErrorDesc is not empty. # FIXME: Why not just "FailedMessage.count"?
       messages_with_errors = Message.where(Sequel.~(:ErrorCode => ''))
@@ -35,22 +35,47 @@ module GammoAnalyzer
       # All encountered error codes. # FIXME: Do this with 'SELECT ... DISTINCT'.
       error_codes = messages_with_errors.map(:ErrorCode).uniq
 
-      puts ""
-      puts "Error codes encountered: #{error_codes}"
+      summary = "Error codes encountered: #{error_codes}"
 
       if messages_with_errors.count != FailedMessage.count
-        puts ""
-        puts "WARNING: Message class errors not equal to FailedMessage class errors. Investigate."
-        puts ""
+        summary << <<-MESSAGES
+        WARNING: Message class errors not equal to FailedMessage class errors. Investigate.
+        MESSAGES
       end
 
       # Total message counts.
-      puts "                 Total folders: #{Folder.count} (including #{folders_with_failures.count} with failures)"
-      puts "                Total messages: #{Message.count} (including #{messages_with_errors.count} with errors)"
-      puts "         Total failed messages: #{FailedMessage.count} (sum of all types below)"
-      puts "   Total failed email messages: #{FailedEmailMessage.count}"
-      puts " Total failed contact messages: #{FailedContactMessage.count}"
-      puts "Total failed calendar messages: #{FailedCalendarMessage.count}"
+      summary << <<-TOTAL_MESSAGES
+                         Total folders: #{Folder.count} (including #{folders_with_failures.count} with failures)
+                        Total messages: #{Message.count} (including #{messages_with_errors.count} with errors)
+                 Total failed messages: #{FailedMessage.count} (sum of all types below)
+           Total failed email messages: #{FailedEmailMessage.count}
+         Total failed contact messages: #{FailedContactMessage.count}
+        Total failed calendar messages: #{FailedCalendarMessage.count}
+      TOTAL_MESSAGES
     end
+
+    def write_report_for_klass klass
+      case @cli.report_format
+      when :csv
+        write_csv_report_for_klass klass
+      else
+        raise "Unhandled report format: #{@cli.report_format}"
+      end
+    end
+
+    private
+
+    # klass and instances must respond to .to_csv.
+    def write_csv_report_for_klass klass
+      report_file = File.join(@cli.report_dir, "#{klass.name.underscore}.csv")
+
+      CSV File.open(report_file, "w+") do | csv |
+        csv << klass.to_csv
+        klass.all do |m|
+          csv << m.to_csv
+        end
+      end
+    end
+
   end # class ReportBuilder
 end # module GammoAnalyzer
