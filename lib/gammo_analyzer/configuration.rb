@@ -16,6 +16,9 @@ module GammoAnalyzer
       @report_format       = configuration.fetch :report_format, DEFAULT_REPORT_FORMAT
 
       FileUtils.mkdir_p @output_dir unless File.directory? @output_dir
+
+      # Now that we have the DB file, etc. kick-off the rest of the initialization.
+      require "gammo_analyzer/initialize"
     end
 
   end # class Configuration
