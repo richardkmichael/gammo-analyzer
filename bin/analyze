@@ -1,14 +1,11 @@
 #!/usr/bin/env ruby
 
-# require 'bundler'
-# Bundler.setup
-
 require "gammo_analyzer"
 require "gammo_analyzer/cli"
-
 cli = GammoAnalyzer::CLI.new
 
-require "gammo_analyzer/initialize.rb"
+# Setup which can only happen after we've received options from the user.
+require "gammo_analyzer/initialize"
 
 require "gammo_analyzer/report_builder"
 report_builder = GammoAnalyzer::ReportBuilder.new cli.configuration

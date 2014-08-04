@@ -1,5 +1,3 @@
-# Setup that can only happen after we've received options from the user.
-
 module GammoAnalyzer
   begin
     ::DB = Sequel.sqlite Configuration.database
@@ -9,6 +7,7 @@ module GammoAnalyzer
     exit
   end
 
+  # Models need the database configured, above.
   require "gammo_analyzer/folder"
   require "gammo_analyzer/message"
   require "gammo_analyzer/failed_message"
@@ -19,5 +18,6 @@ module GammoAnalyzer
 
   FAILED_MESSAGE_KLASSES = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
 
-  FileUtils.mkdir_p @report_dir unless File.directory? @report_dir
+  # FIXME: No ivar here.
+  FileUtils.mkdir_p @output_dir unless File.directory? @output_dir
 end

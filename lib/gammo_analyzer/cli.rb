@@ -20,7 +20,7 @@ module GammoAnalyzer
     def initialize
       options = parse_options_from_argv
       @interactive = options.delete :interactive
-      @configuration = Configuration.new
+      @configuration = Configuration.new options
     end
 
 #   def offer_console
@@ -38,6 +38,7 @@ module GammoAnalyzer
 #   end
 
     def console
+      # FIXME: exec "pry -rsequel -rgammo_analyzer ... " ?
       require "pry"
       binding.pry
     end
@@ -72,7 +73,7 @@ module GammoAnalyzer
           options.store :report_format, v
         end
 
-        opts.on('-i', '--interactive', Boolean, 'Launch an interactive Pry console.') do |v|
+        opts.on('-i', '--interactive', 'Launch an interactive Pry console.') do |v|
           options.store :interactive, v
         end
 
