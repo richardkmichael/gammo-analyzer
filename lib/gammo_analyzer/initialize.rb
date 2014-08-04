@@ -18,6 +18,4 @@ module GammoAnalyzer
 
   FAILED_MESSAGE_KLASSES = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
 
-  # FIXME: No ivar here.
-  FileUtils.mkdir_p @output_dir unless File.directory? @output_dir
 end
