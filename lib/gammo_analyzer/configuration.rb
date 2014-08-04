@@ -1,7 +1,6 @@
 module GammoAnalyzer
   class Configuration
 
-    @database = nil # Set later, by an instance. Insane shit.
     class << self
       attr_accessor :database
     end
