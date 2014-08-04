@@ -1,32 +1,17 @@
 module GammoAnalyzer
-  module Configuration
+  class Configuration
 
-    DEFAULT_OPTIONS = { :output_dir    => "fixture/reports",
-                        :report_format => :csv }
+    attr_reader :database
+    attr_reader :output_dir
+    attr_reader :report_format
 
-    def self.configure config
-      # FIXME Don't use a hash; use ivars and set them from the hash, then use attr_reader instead of custom accessors.
-      @config = DEFAULT_OPTIONS.merge config
-      # require 'pry'; binding.pry
-      @config.store :report_dir, File.join(output_dir, File.basename(database))
+    DEFAULT_REPORT_FORMAT = :csv
+
+    def initialize configuration
+      @database      = configuration.fetch :database
+      @output_dir    = configuration.fetch :output_dir, File.dirname(@database)
+      @report_format = configuration.fetch :report_format, DEFAULT_REPORT_FORMAT
     end
 
-    # FIXME: Metaprogram these.
-    def self.database
-      @config.fetch :database, nil
-    end
-
-    def self.output_dir
-      @config.fetch :output_dir, nil
-    end
-
-    def self.report_dir
-      @config.fetch :report_dir, nil
-    end
-
-    def self.report_format
-      @config.fetch :report_format, nil
-    end
-
-  end # module Configuration
+  end # class Configuration
 end # modules GammoAnalyzer

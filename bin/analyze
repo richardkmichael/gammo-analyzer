@@ -1,0 +1,18 @@
+#!/usr/bin/env ruby
+
+# require 'bundler'
+# Bundler.setup
+
+require "gammo_analyzer"
+require "gammo_analyzer/cli"
+
+cli = GammoAnalyzer::CLI.new
+
+require "gammo_analyzer/initialize.rb"
+
+require "gammo_analyzer/report_builder"
+report_builder = GammoAnalyzer::ReportBuilder.new cli.configuration
+
+puts report_builder.summary
+
+cli.console if cli.interactive

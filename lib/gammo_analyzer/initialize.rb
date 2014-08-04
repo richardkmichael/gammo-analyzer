@@ -1,3 +1,5 @@
+# Setup that can only happen after we've received options from the user.
+
 module GammoAnalyzer
   begin
     ::DB = Sequel.sqlite Configuration.database
@@ -7,13 +9,15 @@ module GammoAnalyzer
     exit
   end
 
-  require_relative "folder"
-  require_relative "message"
-  require_relative "failed_message"
-  require_relative "failed_email_message"
-  require_relative "failed_contact_message"
-  require_relative "failed_calendar_message"
-  require_relative "core/string"
+  require "gammo_analyzer/folder"
+  require "gammo_analyzer/message"
+  require "gammo_analyzer/failed_message"
+  require "gammo_analyzer/failed_email_message"
+  require "gammo_analyzer/failed_contact_message"
+  require "gammo_analyzer/failed_calendar_message"
+  require "gammo_analyzer/core/string"
 
   FAILED_MESSAGE_KLASSES = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
+
+  FileUtils.mkdir_p @report_dir unless File.directory? @report_dir
 end

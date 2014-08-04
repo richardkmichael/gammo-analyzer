@@ -1,9 +1,19 @@
+# FIXME:
+#
+# 0/ Extract CSV to a presenter, define "printable columns" on the models, etc.
+#
+# 1/ Errors:
+#      a) codes should link to Google support.
+#      b) not all "error codes" are 8-digit HEX, e.g., "GDSTATUS_BAD_REQUEST"
+
+require "csv"
+
 module GammoAnalyzer
   class ReportBuilder
 
     # FIXME: This should receive a configuration object, or use an object from a higher module?
-    def initialize cli
-      @cli = cli
+    def initialize configuration
+      @configuration = configuration
     end
 
     def report
@@ -55,11 +65,11 @@ module GammoAnalyzer
     end
 
     def write_report_for_klass klass
-      case @cli.report_format
+      case @configuration.report_format
       when :csv
         write_csv_report_for_klass klass
       else
-        raise "Unhandled report format: #{@cli.report_format}"
+        raise "Unhandled report format: #{@configuration.report_format}"
       end
     end
 
@@ -67,9 +77,9 @@ module GammoAnalyzer
 
     # klass and instances must respond to .to_csv.
     def write_csv_report_for_klass klass
-      report_file = File.join(@cli.report_dir, "#{klass.name.underscore}.csv")
+      report = File.join(@configuration.output_dir, "#{klass.name.underscore}.csv")
 
-      CSV File.open(report_file, "w+") do | csv |
+      CSV File.open(report, "w+") do |csv|
         csv << klass.to_csv
         klass.all do |m|
           csv << m.to_csv
