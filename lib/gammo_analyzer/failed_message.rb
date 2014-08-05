@@ -1,8 +1,10 @@
+module GammoAnalyzer
 class FailedMessage < Message
   def_column_alias :error, :ErrorDesc
   def_column_alias :request, :Request
   def_column_alias :response, :Response
 
+      require 'pry' ; binding.pry
   def error_code    ; error.split(':').last    ; end
   def error_message ; error.split(',').first   ; end
   def failed_at     ; Time.at self.FailureTime ; end
@@ -14,4 +16,5 @@ class FailedMessage < Message
   def self.to_csv
     super.concat [ 'FAILED AT', 'ERROR CODE', 'ERROR MESSAGE' ]
   end
+end
 end

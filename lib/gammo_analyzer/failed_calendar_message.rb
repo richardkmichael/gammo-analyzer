@@ -1,3 +1,4 @@
+module GammoAnalyzer
 class FailedCalendarMessage < FailedMessage
   def_column_alias :title,     :Title
   def_column_alias :organizer, :Organizer
@@ -13,4 +14,5 @@ class FailedCalendarMessage < FailedMessage
   def self.to_csv
     super.concat [ 'TITLE', 'ORGANIZER', 'ATTENDEES' ]
   end
+end
 end

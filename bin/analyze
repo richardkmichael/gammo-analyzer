@@ -1,11 +1,19 @@
 #!/usr/bin/env ruby
 
+# FIXME:
+#
+# 1/ CLI provide a configuration instance, not use a Configuration singleton.
+#    def configuration ; ; end
+#
+# 2/ Suppress summary output
+#
+# 3/ Request/suppress pry
+
 require "gammo_analyzer"
-require "gammo_analyzer/cli"
+
 cli = GammoAnalyzer::CLI.new
 
-require "gammo_analyzer/report_builder"
-report_builder = GammoAnalyzer::ReportBuilder.new cli.configuration
+report_builder = GammoAnalyzer::ReportBuilder.new cli
 
 puts report_builder.summary
 

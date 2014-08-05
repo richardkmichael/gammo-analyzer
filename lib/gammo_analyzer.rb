@@ -1,2 +1,6 @@
 require "sqlite3"
 require "sequel"
+require "gammo_analyzer/core_ext/string"
+require "gammo_analyzer/configuration"
+require "gammo_analyzer/report_builder"
+require "gammo_analyzer/cli"

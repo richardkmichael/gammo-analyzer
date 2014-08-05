@@ -1,3 +1,4 @@
+module GammoAnalyzer
 class FailedEmailMessage < FailedMessage
   def_column_alias :subject,  :Subject
   def_column_alias :receiver, :ReceiverEmailAddress
@@ -20,4 +21,5 @@ class FailedEmailMessage < FailedMessage
   def self.to_csv
     super.concat [ 'SENT AT', 'SUBJECT', 'SENDER', 'RECEIVER' ]
   end
+end
 end

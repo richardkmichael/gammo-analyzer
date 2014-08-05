@@ -1,19 +1,7 @@
-# FIXME:
-#
-# 1/ CLI provide a configuration instance, not use a Configuration singleton.
-#    def configuration ; ; end
-#
-# 2/ Suppress summary output
-#
-# 3/ Request/suppress pry
-
 require "optparse"
-
-require "gammo_analyzer/configuration"
 
 module GammoAnalyzer
   class CLI
-
     attr_reader :configuration
     attr_reader :interactive
 
@@ -23,40 +11,7 @@ module GammoAnalyzer
       @configuration = Configuration.new options
     end
 
-#   def offer_console
-#     print "\nPress any key to start a Pry session in "
-#     countdown = 3
-
-#     until ( countdown == 0 ) || ( launch = start_now? ) do
-#       count = "..#{countdown}"
-#       countdown == 1 ? puts(count) : print(count)
-#       sleep 1
-#       countdown -= 1
-#     end
-
-#     console if launch
-#   end
-
-    def console
-      # FIXME: exec "pry -rsequel -rgammo_analyzer ... " ?
-      require "pry"
-      binding.pry
-    end
-
     private
-
-#   def start_now?
-#     # Do not pollute readline's history.
-#     system 'stty raw -echo'
-#     begin
-#       $stdin.read_nonblock 1
-#     rescue Errno::EINTR, Errno::EAGAIN, EOFError
-#       false
-#     ensure
-#       # Ensure the terminal is cooked when we exit.
-#       system 'stty -raw echo'
-#     end
-#   end
 
     def parse_options_from_argv
       options = {}

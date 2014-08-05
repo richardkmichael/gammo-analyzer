@@ -1,25 +1,34 @@
+DB = Sequel.sqlite("/home/ubuntu/helen.qi@articleltd.com")
 module GammoAnalyzer
   class Configuration
 
-    class << self
-      attr_accessor :database
-    end
-
-    attr_reader :output_dir
-    attr_reader :report_format
-
     DEFAULT_REPORT_FORMAT = :csv
 
-    def initialize configuration
-      self.class.database  = configuration.fetch :database
-      @output_dir          = configuration.fetch :output_dir, File.dirname(self.class.database)
-      @report_format       = configuration.fetch :report_format, DEFAULT_REPORT_FORMAT
+    def initialize(database:,output_dir: 'output_dir',report_format: DEFAULT_REPORT_FORMAT)
+      @database = database
+      @output_dir = output_dir
+      @report_format = report_format
 
-      FileUtils.mkdir_p @output_dir unless File.directory? @output_dir
+      Kernel.const_set("DB", Sequel.sqlite(@database))
 
-      # Now that we have the DB file, etc. kick-off the rest of the initialization.
-      require "gammo_analyzer/initialize"
+      puts "defining message"
+      # require 'pry' ; binding.pry
+      require "gammo_analyzer/folder"
+      require "gammo_analyzer/message"
+      require "gammo_analyzer/failed_message"
+      require "gammo_analyzer/failed_email_message"
+      require "gammo_analyzer/failed_contact_message"
+      require "gammo_analyzer/failed_calendar_message"
     end
 
+      #FileUtils.mkdir_p @output_dir unless File.directory? @output_dir
+
+      #rescue SQLite3::NotADatabaseException => e
+      #  puts "FATAL: #{e.message}"
+      #  exit
+      #end
+
+      ##FAILED_MESSAGE_KLASSES = [ FailedEmailMessage, FailedContactMessage, FailedCalendarMessage ]
+
   end # class Configuration
-end # modules GammoAnalyzer
+end # module GammoAnalyzer

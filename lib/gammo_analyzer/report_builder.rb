@@ -12,8 +12,8 @@ module GammoAnalyzer
   class ReportBuilder
 
     # FIXME: This should receive a configuration object, or use an object from a higher module?
-    def initialize configuration
-      @configuration = configuration
+    def initialize cli
+      @configuration = cli.configuration
     end
 
     def report
@@ -36,6 +36,7 @@ module GammoAnalyzer
     end
 
     def summary
+      puts "calling summary"
       # Messages with errors: either ErrorCode or ErrorDesc is not empty. # FIXME: Why not just "FailedMessage.count"?
       messages_with_errors = Message.where(Sequel.~(:ErrorCode => ''))
 

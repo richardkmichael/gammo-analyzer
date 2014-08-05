@@ -1,3 +1,4 @@
+module GammoAnalyzer
 class Folder < Sequel::Model
   one_to_many :messages, :key => :FolderId
 
@@ -49,4 +50,5 @@ class Folder < Sequel::Model
 #   JOIN FailedMessages
 #     ON FailedMessages.MessageRunId = Messages.MessageRunId
 # WHERE Folders.FolderId = 217;
+end
 end
